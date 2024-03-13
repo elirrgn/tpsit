@@ -7,6 +7,7 @@ doBackup() {
     escluse=()
     aggiunti=0
     while [ "$cartella" != "fine" ]
+        clear
         do
         echo "Scegli tra le seguenti cartelle: "
         echo
@@ -51,6 +52,7 @@ else
         then
             cd backup
             echo "Cartella backup già esistente"
+            doBackup
         else
             echo "Richiesti i diritti amministratore per creare la cartella backup"
     fi
