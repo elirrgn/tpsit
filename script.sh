@@ -28,7 +28,7 @@ doBackup() {
         fi
     done
     clear
-    data=$(date +"%Y-%m-%d:%H-%M-%S")
+    data=$(date +"%d-%m-%Y:%H-%M")
     backupPath="/backup/$data"
     echo "Creazione cartella di Backup"
     sudo mkdir "/backup/$data"
