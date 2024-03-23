@@ -85,6 +85,13 @@ function reportBackup() {
 }
 
 
+function nonRoot() {
+    clear
+    echo "Sono richiesti i diritti amministratore per fare un backup, è permesso visualizzare i backup precedenti"
+    sleep 2
+    open .
+}
+
 #main part
 cd /
 echo "Controllando i diritti amministratore..."
@@ -94,7 +101,7 @@ if [[ $(id -u) -eq 1000 ]]; then
     if [ -e "backup" ] 
         then
             cd backup
-            echo "Cartella backup già esistente (sei root)"
+            echo "Cartella backup già esistente"
         else
             #creazione cartella, richiesti permessi da amministratore
             sudo mkdir backup
@@ -111,6 +118,13 @@ if [[ $(id -u) -eq 1000 ]]; then
     echo
     echo "Backup Completato Correttamente"
 else
-    echo "Richiesti i diritti amministratore per creare la cartella backup"
-    sleep 2
+    if [ -e "backup" ]
+        then
+            cd backup
+            nonRoot
+        else
+            clear
+            echo "La cartella di Backup non esiste, sono richiesti i diritti amministratore per creare la cartella backup"        
+    fi
+    
 fi
