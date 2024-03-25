@@ -4,15 +4,16 @@ function getExcluded() {
     cd $home
     whiptail --title "Backup Bash" --msgbox "Cartelle disponibili: \n\n$(ls)"  20 80
     cartella=$(whiptail --title "Backup Bash" --inputbox "Inserisci il nome di una cartella da escludere (scrivi 'fine' per terminare): " 3>&1 1>&2 2>&3 8 60) 
-    if [ "$cartella" != "fine" ]; then
+    cartella+="/"
+    if [ "$cartella" != "fine/" ]; then
         if [ -d "$cartella" ]; then
-            esclusi+=("$cartella/")
+            esclusi+=("$cartella")
         else
             whiptail --title "Backup Bash" --msgbox "La cartella $cartella non esiste" 8 60
         fi
     fi
     #Memorizzo quali cartelle sono da escludere nel backup
-    while [ "$cartella" != "fine" ]; do #Ciclo fino a quando l'utente inserisce "fine"
+    while [ "$cartella" != "fine/" ]; do #Ciclo fino a quando l'utente inserisce "fine"
         whiptail --title "Backup Bash" --msgbox "Cartelle disponibili:\n\n$(ls)"  20 80
         lista=""
         for folder in "${esclusi[@]}"; do
@@ -20,9 +21,19 @@ function getExcluded() {
         done
         whiptail --title "Backup Bash" --msgbox "Cartelle già escluse:\n$lista"  20 80
         cartella=$(whiptail --title "Backup Bash" --inputbox "Inserisci il nome di una cartella da escludere (scrivi 'fine' per terminare): " 3>&1 1>&2 2>&3 8 60) 
-        if [ "$cartella" != "fine" ]; then
-            if [ -d "$cartella" ]; then
-                esclusi+=("$cartella/")
+        cartella+="/"
+        giaEsclusa=false
+        for elemento in "${esclusi[@]}"; do
+            if [ "$cartella" = "$elemento" ]; then
+                giaEsclusa=true
+                break
+            fi
+        done
+        if [ "$cartella" != "fine/" ]; then
+            if $giaEsclusa; then
+                whiptail --title "Backup Bash" --msgbox "La cartella $cartella è già esclusa" 8 60
+            elif [ -d "$cartella" ]; then
+                esclusi+=("$cartella")
             else
                 whiptail --title "Backup Bash" --msgbox "La cartella $cartella non esiste" 8 60
             fi
@@ -55,6 +66,7 @@ function folderCreation() {
 function backup() {
     whiptail --title "Backup Bash" --msgbox "BackUp in corso..." 8 60
     echo "Report Backup (Cartella Dimensione)" >> "/backup/$data/report.txt"
+    SECONDS=0
     #Ciclo per ogni cartella nel path attuale (home)
     for cart in */; do
         # Controlla se la cartella è da escludere
@@ -79,13 +91,14 @@ function backup() {
 function reportBackup() {
     #Salvo il risultato totale del report e stampo a schermo il contenuto del file
     echo >> "/backup/$data/report.txt"
+    echo "Il backup è stato eseguito in $SECONDS secondi" >> "/backup/$data/report.txt"
+    echo >> "/backup/$data/report.txt"
     echo "Totale $somma_totale KB">> "/backup/$data/report.txt"
     whiptail --title "Backup Bash" --msgbox "$(cat "/backup/$data/report.txt")" 20 80
 }
 
 
 function nonRoot() {
-    clear
     whiptail --title "Backup Bash" --msgbox "Sono richiesti i diritti amministratore per fare un backup, è permesso visualizzare i backup precedenti" 8 60
     open .
 }
@@ -118,7 +131,6 @@ else
             cd backup
             nonRoot
         else
-            clear
             whiptail --title "Errore" --msgbox "La cartella di Backup non esiste, sono richiesti i diritti amministratore per creare la cartella backup" 8 60       
     fi
     
